@@ -123,6 +123,9 @@ class RunnerROS2(Node, RunnerROSBase):
             self.logger.warning("[Main] Camera intrinsics received and stored.")
 
     def run(self):
+        if hasattr(self.dualmap, 'mapping_thread'):
+            if not self.dualmap.mapping_thread.is_alive():
+                self.get_logger().error("ALARM: Mapping thread is dead.")
         """Periodic processing loop triggered by ROS2 timer."""
         self.run_once(lambda: self.get_clock().now().nanoseconds / 1e9)
         self.publish_executor.submit(self.publisher.publish_all, self.dualmap)

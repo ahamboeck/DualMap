@@ -3,8 +3,8 @@
 # ============================================================
 ## Self Collected Data
 dataset_name: self_collected
-scene_id: test_numero_uno
-dataset_path: dataset/HM3D_collect/
+scene_id: test_numero_dos
+# dataset_path: dataset/HM3D_collect/
 dataset_conf_path: config/data_config/ros/self_collected.yaml
 
 ## Replica Dataset

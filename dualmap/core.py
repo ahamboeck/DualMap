@@ -134,6 +134,8 @@ class Dualmap:
             self.mapping_thread = threading.Thread(
                 target=self.run_mapping_thread, daemon=True
             )
+            if not self.mapping_thread.is_alive():
+                logger.info("[Core] Mapping thread has DIED! Attempting to restart or shutting down.")
             self.mapping_thread.start()
 
     def print_cfg(self):
