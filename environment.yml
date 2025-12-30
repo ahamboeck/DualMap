@@ -5,13 +5,14 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.10
+  - python=3.12
   - cmake
   - pip
-  - faiss-cpu=1.9.0
-  - mkl
+  - faiss-cpu
   - blas=1.0=mkl
   - pip:
+      - setuptools
+      - wheel
       - torch
       - torchvision
       - torchaudio

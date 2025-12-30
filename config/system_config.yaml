@@ -22,7 +22,7 @@ yolo:
 
   ## The given classes lists
   ## Indoor Classes List
-  given_classes_path: ./config/class_list/gpt_indoor_general.txt
+  given_classes_path: ./config/class_list/hm3d300_classes_ycb.txt
   # given_classes_path: ./config/class_list/gpt_indoor_office.txt
   # given_classes_path: ./config/class_list/gpt_indoor_apartment.txt
   # given_classes_path: ./config/class_list/gpt_indoor_classroom.txt
@@ -63,7 +63,7 @@ device: cuda
 # DUALMAP CONFIG
 # ============================================================
 ### VISUALIZATION CONFIG
-use_rerun: True
+use_rerun: true
 
 
 ### OBSERVATION GENERATION CONFIG
@@ -75,9 +75,9 @@ save_detection: False
 # detection saving and loading directory
 detection_path: ${output_path}/${dataset_name}_${scene_id}/detections
 # Show detection results on Rerun during runtime
-visualize_detection: False
+visualize_detection: True
 # Show overlapping 3D bounding boxes on Rerun (slower performance)
-show_3d_bbox_overlapped: False
+show_3d_bbox_overlapped: True
 
 
 ## FastSAM Settings
@@ -143,9 +143,9 @@ on_relation:
   plane_distance: 0.1
 
 ### KEYFRAME CONFIG
-time_threshold: 0.5
-pose_threshold: 0.1
-rotation_threshold: 3
+time_threshold: 0.25
+pose_threshold: 0.05
+rotation_threshold: 1
 
 
 ### LOCAL OBJECTS CONFIG --> CONCRETE OBJECTS

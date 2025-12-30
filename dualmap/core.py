@@ -51,9 +51,13 @@ class Dualmap:
         self.global_map_manager = GlobalMapManager(cfg)
 
         # Additional initialization for visualization
-        self.visualizer.set_use_rerun(cfg.use_rerun)
-        self.visualizer.init("refactor_mapping")
-        self.visualizer.spawn()
+        self.visualizer.set_use_rerun(self.cfg.use_rerun)
+        self.visualizer.init("refactor_mapping", spawn=False)
+
+        # 2. Use connect_tcp just like your test script
+        # This works because your class proxies the call to rr.connect_tcp
+        logger.info("[Visualizer] Connecting to Rerun host at 127.0.0.1:9876...")
+        self.visualizer.connect_tcp("127.0.0.1:9876")
 
         # Keyframe Selection
         self.keyframe_counter = 0

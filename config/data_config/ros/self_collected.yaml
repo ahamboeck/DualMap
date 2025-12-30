@@ -1,18 +1,18 @@
 dataset_name: 'self_collected'
 
 ros_topics:
-  rgb: "/camera/rgb/image_raw"
-  depth: "/camera/depth/image_raw"
-  odom: "/camera/pose"
-  camera_info: "/camera_info"
+  rgb: "/camera_front/rgb"
+  depth: "/camera_front/depth"
+  odom: "/jackal/odom"
+  camera_info: "/camera_front/camera_info"
 
 # Depth factor: divisor to convert depth values to meters
 # - For 16UC1 (uint16) depth in millimeters (e.g., RealSense, Orbbec): use 1000.0
 # - For 32FC1 (float32) depth in meters (e.g., Isaac Sim, Gazebo): use 1.0
 depth_factor: 1000.0
 
-intrinsic:
-  fx: 600
-  fy: 600
-  cx: 600
-  cy: 340
+extrinsics:
+  - [-0.000, -0.174,  0.985,  0.297]
+  - [-1.000,  0.000, -0.000, -0.017]
+  - [-0.000, -0.985, -0.174,  1.062]
+  - [ 0.000,  0.000,  0.000,  1.000]

@@ -2,17 +2,17 @@
 # DATASET CONFIG
 # ============================================================
 ## Self Collected Data
-# dataset_name: self_collected
-# scene_id: 00880-Nfvxx8J5NCo
-# dataset_path: dataset/HM3D_collect/
-# dataset_conf_path: config/data_config/dataset/self_collected.yaml
+dataset_name: self_collected
+scene_id: test_numero_uno
+dataset_path: dataset/HM3D_collect/
+dataset_conf_path: config/data_config/ros/self_collected.yaml
 
 ## Replica Dataset
-dataset_name: replica
-scene_id: room_0
-dataset_path: dataset/Replica
-dataset_conf_path: config/data_config/dataset/replica.yaml
-dataset_gt_path: dataset/Replica-Dataset/Replica_original
+# dataset_name: replica
+# scene_id: room_0
+# dataset_path: dataset/Replica
+# dataset_conf_path: config/data_config/dataset/replica.yaml
+# dataset_gt_path: dataset/Replica-Dataset/Replica_original
 
 ## ScanNet Dataset
 # dataset_name: scannet

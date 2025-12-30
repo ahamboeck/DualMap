@@ -29,6 +29,7 @@ class RunnerROS2(Node, RunnerROSBase):
     def __init__(self, cfg):
         Node.__init__(self, "runner_ros")
         setup_logging(output_path=cfg.output_path, config_path=cfg.logging_config)
+        # self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
         self.logger = logging.getLogger(__name__)
         self.logger.info("[Runner ROS2]")
         self.logger.info(OmegaConf.to_yaml(cfg))

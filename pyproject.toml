@@ -26,3 +26,7 @@ known_third_party = ["numpy", "torch", "open3d", "hydra", "omegaconf", "sklearn"
 [tool.autopep8]
 max_line_length = 88
 aggressive = 1
+
+[tool.setuptools]
+packages = ["dualmap"]
+version = "0.1.0"
