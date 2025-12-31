@@ -25,7 +25,7 @@ yolo:
   # given_classes_path: ./config/class_list/hm3d300_classes_ycb.txt
   # given_classes_path: ./config/class_list/gpt_indoor_general.txt
   # given_classes_path: ./config/class_list/gpt_indoor_office.txt
-  given_classes_path: ./config/class_list/gpt_indoor_apartment.txt
+  given_classes_path: ./config/class_list/power_plant.txt
   # given_classes_path: ./config/class_list/gpt_indoor_classroom.txt
 
   ## Outdoor Classes List
@@ -41,21 +41,26 @@ yolo:
 
 sam:
   _target_: _self_
+  model_path: sam2_l.pt
   # model_path: model/sam_l.pt
-  model_path: model/mobile_sam.pt
+  # model_path: model/mobile_sam.pt
 
 fastsam:
   _target_: _self_
-  model_path: model/FastSAM-s.pt
+  model_path: model/FastSAM-x.pt
+  # model_path: model/FastSAM-s.pt
+
+# clip:
+#   _target_: _self_
+#   model_name:  MobileCLIP-S2
+#   pretrained: datacompdr
+#   clip_length: 512
 
 clip:
   _target_: _self_
-  model_name:  MobileCLIP-S2
-  # model_name: ViT-H-14
-  pretrained: datacompdr
-  # pretrained: laion2b_s32b_b79k
-  clip_length: 512
-  # clip_length: 1024
+  model_name: ViT-H-14
+  pretrained: laion2b_s32b_b79k
+  clip_length: 1024
 
 device: cuda
 
@@ -83,10 +88,10 @@ show_3d_bbox_overlapped: False
 
 ## FastSAM Settings
 # Use FastSAM for Open-Voca supplementation
-use_fastsam: True
+use_fastsam: false
 fastsam_confidence: 0.80
 # Display FastSAM debug outputs on Rerun
-show_fastsam_debug: True
+show_fastsam_debug: false
 
 
 ## Detection Refinement
@@ -106,13 +111,21 @@ use_avg_feat_for_unknown: True
 
 ## PCD Settings
 # minimum points threshold for object's PCD
-min_points_threshold: 5
+min_points_threshold: 750
 # pcd params
-downsample_voxel_size: 0.02
+# INCREASED from 0.02 (2cm) to 0.08 (8cm). 
+# This is the most effective way to reduce CPU work in Open3D.
+downsample_voxel_size: 0.08
+
+# Consider setting this to False if the lag persists. 
+# DBSCAN is the single most CPU-intensive geometric operation in the pipeline.
 dbscan_remove_noise: !!bool True
-dbscan_eps: 0.1
-dbscan_min_points: 10
-pcd_sample_ratio: 0.04
+dbscan_eps: 0.2
+dbscan_min_points: 5
+
+# DECREASED from 0.04 to 0.01.
+# This reduces the number of points generated from the depth image by 4x.
+pcd_sample_ratio: 0.01
 
 
 ### MATCHING CONFIG
@@ -150,13 +163,13 @@ rotation_threshold: 3
 
 
 ### LOCAL OBJECTS CONFIG --> CONCRETE OBJECTS
-active_window_size: 10
+active_window_size: 6
 downsample_interval: 3
 # Param for Split Detection
 max_common_th: 6
-max_pending_count: 5
+max_pending_count: 2
 # Param for Stability Check
-stable_num: 8
+stable_num: 4
 
 
 ### GLOBAL OBJECTS CONFIG --> ANCHOR OBJECTS

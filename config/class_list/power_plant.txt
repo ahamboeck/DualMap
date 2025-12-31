@@ -1,0 +1,25 @@
+person
+industrial worker
+safety helmet
+safety vest
+reflective vest
+safety goggles
+ear protection
+industrial pipe
+gas pipe
+pipe
+valve
+valve wheel
+valve handle
+pressure gauge
+analog gauge
+flange
+pump
+fire extinguisher
+forklift
+cardboard box
+pallet
+blue barrel
+metal shelf
+storage rack
+unknown

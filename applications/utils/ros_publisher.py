@@ -1,12 +1,12 @@
 import struct
 import time
-
 import numpy as np
 from cv_bridge import CvBridge
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Point, Quaternion
 from nav_msgs.msg import Odometry, Path
 from sensor_msgs.msg import Image, PointCloud2, PointField
-from std_msgs.msg import Header
+from std_msgs.msg import Header, ColorRGBA
+from visualization_msgs.msg import Marker, MarkerArray  # Added for object labels and poses
 
 
 class ROSPublisher:
@@ -34,12 +34,20 @@ class ROSPublisher:
         self.local_sem_publisher = node.create_publisher(
             PointCloud2, "/local_map/semantic", 10
         )
+        # New Topic: Array of object labels and their 3D poses
+        self.local_objects_publisher = node.create_publisher(
+            MarkerArray, "/local_map/objects", 10
+        )
 
         self.global_rgb_publisher = node.create_publisher(
             PointCloud2, "/global_map/rgb", 10
         )
         self.global_sem_publisher = node.create_publisher(
             PointCloud2, "/global_map/semantic", 10
+        )
+        # New Topic: Array of global object labels and poses
+        self.global_objects_publisher = node.create_publisher(
+            MarkerArray, "/global_map/objects", 10
         )
 
     def publish_all(self, dualmap):
@@ -52,7 +60,6 @@ class ROSPublisher:
         self._publish_path(dualmap.action_path, "action")
 
         if self.cfg.use_rviz:
-
             # 2. Publish images
             self._publish_image(dualmap.detector.annotated_image, "annotated")
             self._publish_image(dualmap.detector.annotated_image_fs, "fastsam")
@@ -63,17 +70,81 @@ class ROSPublisher:
             # 3. Publish pose
             self._publish_pose(dualmap.curr_pose)
 
-            # 4. Publish local map (RGB point cloud + semantic point cloud)
+            # 4. Publish local map (Point Clouds + Object Markers)
             if len(dualmap.local_map_manager.local_map):
-                start_time = time.time()
                 self._publish_local_map(
                     dualmap.local_map_manager, dualmap.visualizer, publish_rgb=False
                 )
+                self._publish_object_metadata(
+                    dualmap.local_map_manager.local_map, 
+                    dualmap.visualizer, 
+                    self.local_objects_publisher, 
+                    "map"
+                )
 
+            # 5. Publish global map
             if len(dualmap.global_map_manager.global_map):
                 self._publish_global_map(
                     dualmap.global_map_manager, dualmap.visualizer, publish_rgb=False
                 )
+                self._publish_object_metadata(
+                    dualmap.global_map_manager.global_map, 
+                    dualmap.visualizer, 
+                    self.global_objects_publisher, 
+                    "map"
+                )
+
+    def _publish_object_metadata(self, objects, visualizer, publisher, frame_id):
+        """
+        Publishes labels (as 3D text) and bounding boxes (poses) for each object.
+        """
+        marker_array = MarkerArray()
+        now = self.node.get_clock().now().to_msg()
+
+        for i, obj in enumerate(objects):
+            # 1. Determine Label and Color
+            obj_name = visualizer.obj_classes.get_classes_arr()[obj.class_id]
+            color = visualizer.obj_classes.get_class_color(obj_name)
+            
+            # Use the centroid of the Bounding Box as the Pose
+            center = obj.bbox.get_center()
+            extent = obj.bbox.get_extent()
+
+            # Create Text Marker (Label)
+            text_marker = Marker()
+            text_marker.header.frame_id = frame_id
+            text_marker.header.stamp = now
+            text_marker.ns = "labels"
+            text_marker.id = i
+            text_marker.type = Marker.TEXT_VIEW_FACING
+            text_marker.action = Marker.ADD
+            text_marker.pose.position.x = center[0]
+            text_marker.pose.position.y = center[1]
+            text_marker.pose.position.z = center[2] + (extent[2] / 2.0) + 0.2 # Float slightly above
+            text_marker.scale.z = 0.2 # Text height
+            text_marker.color = ColorRGBA(r=1.0, g=1.0, b=1.0, a=1.0)
+            text_marker.text = f"{obj_name}_{str(obj.uid)[:4]}" # Name + short ID
+            marker_array.markers.append(text_marker)
+
+            # Create Box Marker (Pose/Geometry)
+            box_marker = Marker()
+            box_marker.header.frame_id = frame_id
+            box_marker.header.stamp = now
+            box_marker.ns = "bboxes"
+            box_marker.id = i
+            box_marker.type = Marker.CUBE
+            box_marker.action = Marker.ADD
+            box_marker.pose.position.x = center[0]
+            box_marker.pose.position.y = center[1]
+            box_marker.pose.position.z = center[2]
+            box_marker.pose.orientation.w = 1.0 # AABBs have no rotation
+            box_marker.scale.x = extent[0]
+            box_marker.scale.y = extent[1]
+            box_marker.scale.z = extent[2]
+            box_marker.color = ColorRGBA(r=float(color[0]), g=float(color[1]), b=float(color[2]), a=0.5)
+            marker_array.markers.append(box_marker)
+
+        publisher.publish(marker_array)
 
     def _publish_path(self, path, path_type):
         if path is None:
@@ -100,13 +171,12 @@ class ROSPublisher:
 
         if publisher:
             publisher.publish(path_msg)
-            # self.node.get_logger().info(f"Published {path_type} path.")
 
     def _publish_image(self, image, image_type):
         if image is None:
             return
 
-        ros_image = self.bridge.cv2_to_imgmsg(image, encoding="bgr8")
+        ros_image = self.bridge.cv2_to_imgmsg(image, encoding="rgb8")
         publisher = {
             "annotated": self.image_publisher,
             "fastsam": self.fs_image_publisher,
@@ -120,17 +190,14 @@ class ROSPublisher:
         if pose_matrix is None:
             return
 
-        # Extract translation and rotation
         translation = pose_matrix[:3, 3]
         quaternion = self.rotation_matrix_to_quaternion(pose_matrix[:3, :3])
 
-        # Create Odometry message
         odom_msg = Odometry()
-        odom_msg.header.stamp = self.node.get_clock().now().to_msg()  # Timestamp
-        odom_msg.header.frame_id = "map"  # Parent frame (global coordinate system)
-        odom_msg.child_frame_id = ""  # Child frame (robot coordinate system)
+        odom_msg.header.stamp = self.node.get_clock().now().to_msg()
+        odom_msg.header.frame_id = "map"
+        odom_msg.child_frame_id = ""
 
-        # Set position and orientation
         odom_msg.pose.pose.position.x = translation[0]
         odom_msg.pose.pose.position.y = translation[1]
         odom_msg.pose.pose.position.z = translation[2]
@@ -139,7 +206,6 @@ class ROSPublisher:
         odom_msg.pose.pose.orientation.z = float(quaternion[2])
         odom_msg.pose.pose.orientation.w = float(quaternion[3])
 
-        # Set velocity information (default to 0)
         odom_msg.twist.twist.linear.x = 0.0
         odom_msg.twist.twist.linear.y = 0.0
         odom_msg.twist.twist.linear.z = 0.0
@@ -147,7 +213,6 @@ class ROSPublisher:
         odom_msg.twist.twist.angular.y = 0.0
         odom_msg.twist.twist.angular.z = 0.0
 
-        # Publish Odometry message
         self.pose_publisher.publish(odom_msg)
 
     def _publish_local_map(self, local_map_manager, visualizer, publish_rgb=True):
@@ -221,23 +286,16 @@ class ROSPublisher:
         )
 
     def publish_pointcloud(self, points, colors, publisher, frame_id):
-        """
-        Efficient point cloud publishing: batch pack RGB data with NumPy
-        """
         num_points = points.shape[0]
-
-        # Efficient RGB packing: avoid Python loops
         r = colors[:, 0].astype(np.uint32)
         g = colors[:, 1].astype(np.uint32)
         b = colors[:, 2].astype(np.uint32)
-        rgb_packed = (r << 16) | (g << 8) | b  # RGB → UINT32
+        rgb_packed = (r << 16) | (g << 8) | b
 
-        # Efficient data concatenation: build PointCloud data at once
         cloud_data = np.zeros((num_points, 4), dtype=np.float32)
         cloud_data[:, :3] = points
-        cloud_data[:, 3] = rgb_packed.view(np.float32)  # direct conversion
+        cloud_data[:, 3] = rgb_packed.view(np.float32)
 
-        # PointCloud2 field definition
         fields = [
             PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),
             PointField(name="y", offset=4, datatype=PointField.FLOAT32, count=1),
@@ -245,12 +303,10 @@ class ROSPublisher:
             PointField(name="rgb", offset=12, datatype=PointField.UINT32, count=1),
         ]
 
-        # Message header
         header = Header()
         header.stamp = self.node.get_clock().now().to_msg()
         header.frame_id = frame_id
 
-        # Build PointCloud2 message
         pointcloud_msg = PointCloud2()
         pointcloud_msg.header = header
         pointcloud_msg.height = 1
@@ -262,24 +318,11 @@ class ROSPublisher:
         pointcloud_msg.is_dense = True
         pointcloud_msg.data = cloud_data.tobytes()
 
-        # Publish point cloud
         publisher.publish(pointcloud_msg)
 
     def rotation_matrix_to_quaternion(self, R):
-        """
-        Convert a rotation matrix to a quaternion.
-
-        Parameters:
-        - R: A 3x3 rotation matrix.
-
-        Returns:
-        - A quaternion in the format [x, y, z, w].
-        """
-        # Make sure the matrix is a numpy array
         R = np.asarray(R)
-        # Allocate space for the quaternion
         q = np.empty((4,), dtype=np.float32)
-        # Compute the quaternion components
         q[3] = np.sqrt(np.maximum(0, 1 + R[0, 0] + R[1, 1] + R[2, 2])) / 2
         q[0] = np.sqrt(np.maximum(0, 1 + R[0, 0] - R[1, 1] - R[2, 2])) / 2
         q[1] = np.sqrt(np.maximum(0, 1 - R[0, 0] + R[1, 1] - R[2, 2])) / 2
@@ -287,5 +330,4 @@ class ROSPublisher:
         q[0] *= np.sign(q[0] * (R[2, 1] - R[1, 2]))
         q[1] *= np.sign(q[1] * (R[0, 2] - R[2, 0]))
         q[2] *= np.sign(q[2] * (R[1, 0] - R[0, 1]))
-
         return q
