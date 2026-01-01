@@ -142,7 +142,7 @@ class Tracker:
 
         # from curr obs
         curr_bbox_values = []
-        for obj in self.ref_map:
+        for obj in self.curr_frame:
             obj_bbox = np.asarray(obj.bbox.get_box_points())
             obj_bbox = torch.from_numpy(obj_bbox)
             curr_bbox_values.append(obj_bbox)
@@ -466,10 +466,10 @@ class Tracker:
 
     def compute_box_volume_torch(self, box):
         # box shape is (M, 8, 3)
-        edge1 = torch.norm(box[:, 1] - box[:, 0], dim=-1)
-        edge2 = torch.norm(box[:, 3] - box[:, 0], dim=-1)
-        edge3 = torch.norm(box[:, 4] - box[:, 0], dim=-1)
-        return edge1 * edge2 * edge3
+        min_corner = torch.min(box, dim=1).values
+        max_corner = torch.max(box, dim=1).values
+        dims = max_corner - min_corner
+        return torch.prod(dims, dim=-1)
 
     def compute_intersection_volume_torch(self, bbox1, bbox2):
         # Calculate min/max corners for intersection computation
