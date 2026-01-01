@@ -72,6 +72,9 @@ class Dualmap:
         self.prev_pose = None
         self.wait_count = 0
 
+        self.curr_observations = []
+        self.curr_detections = None
+
         # check if need to preload the global map
         if self.cfg.preload_global_map:
             logger.warning("[Core][Init] Preloading global map...")

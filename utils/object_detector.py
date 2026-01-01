@@ -108,6 +108,7 @@ class Detector:
         # Detection results
         # NOTICE: Detection results are stored in Batch, it is not separated by objects
         self.curr_results = {}
+        self.curr_detections = None
         # Data input
         self.curr_data = DataInput()
         self.prev_data = None
@@ -249,6 +250,7 @@ class Detector:
     def update_state(self) -> None:
         self.curr_results = {}
         self.curr_observations = []
+        self.curr_detections = None
         # self.prev_data = self.curr_data.copy()
         # self.curr_data.clear()
 
@@ -657,26 +659,42 @@ class Detector:
         return merged_detctions
 
     def process_detections(self):
-
-        color = self.curr_data.color.astype(np.uint8)
+        """
+        Process the current frame through YOLO, SAM, and CLIP.
+        Converts BGR input to RGB for consistent inference and visualization.
+        """
+        # 1. Convert input BGR to RGB Master Image
+        # This fixes the "Blue Man" effect and ensures CLIP sees real colors.
+        color_bgr = self.curr_data.color.astype(np.uint8)
+        color_rgb = cv2.cvtColor(color_bgr, cv2.COLOR_BGR2RGB)
 
         with timing_context("YOLO+Segmentation+FastSAM", self):
-            # Run FastSAM
+            # Run FastSAM in parallel if enabled
             if self.cfg.use_fastsam:
                 fastsam_thread = threading.Thread(
-                    target=self.process_fastsam, args=(color,)
+                    target=self.process_fastsam, args=(color_rgb,)
                 )
                 fastsam_thread.start()
 
-            # Run YOLO and SAM
-            self.process_yolo_and_sam(color)
+            # Run YOLO and SAM using the RGB image
+            self.process_yolo_and_sam(color_rgb)
+
+            # --- CRITICAL FIX: SAFETY CHECK ---
+            # If YOLO found nothing, self.curr_detections is None.
+            # We must exit early here to prevent the AttributeError crash.
+            if self.curr_detections is None:
+                logger.warning("[Detector] No detections found in curr frame. Skipping frame.")
+                self.curr_results = {}
+                return 
+            # ----------------------------------
 
             # Waiting for FastSAM to finish
             if self.cfg.use_fastsam:
                 fastsam_thread.join()
 
         with timing_context("Detection Filter", self):
-            self.filter.update_detections(self.curr_detections, color)
+            # Pass RGB to filter for proximity checks (histogram matching)
+            self.filter.update_detections(self.curr_detections, color_rgb)
             filtered_detections = self.filter.run_filter()
 
         if self.filter.get_len() == 0:
@@ -687,22 +705,23 @@ class Detector:
             return
 
         # add extra detections from FastSAM results
-        # if no detection from fastsam, just skip
-        if self.cfg.use_fastsam and self.fastsam_detections:
+        if self.cfg.use_fastsam and hasattr(self, 'fastsam_detections') and self.fastsam_detections:
             filtered_detections = self.add_extra_detections_from_fastsam(
-                color, self.fastsam_detections, filtered_detections
+                color_rgb, self.fastsam_detections, filtered_detections
             )
 
         with timing_context("CLIP+Create Object Pointcloud", self):
+            # Background thread for 3D geometry
             cluster_thread = threading.Thread(
                 target=self.process_masks, args=(filtered_detections.mask,)
             )
             cluster_thread.start()
 
             with timing_context("CLIP", self):
+                # Classification now uses the already-converted color_rgb
                 image_crops, image_feats, text_feats = (
                     self.compute_clip_features_batched(
-                        color,
+                        color_rgb,
                         filtered_detections,
                         self.clip_model,
                         self.clip_tokenizer,
@@ -714,21 +733,23 @@ class Detector:
 
             cluster_thread.join()
 
+        # Compile final results
         results = {
-            # SAM Info
             "xyxy": filtered_detections.xyxy,
             "confidence": filtered_detections.confidence,
             "class_id": filtered_detections.class_id,
             "masks": filtered_detections.mask,
-            # CLIP info
             "image_feats": image_feats,
             "text_feats": text_feats,
         }
 
+        # Visualization for Rerun/ROS
         if self.cfg.visualize_detection:
             with timing_context("Visualize Detection", self):
+                # Using color_rgb ensures the published 'annotated_image' 
+                # matches the 'rgb8' encoding in your ROS publisher.
                 annotated_image, _ = visualize_result_rgb(
-                    color, filtered_detections, self.obj_classes.get_classes_arr()
+                    color_rgb, filtered_detections, self.obj_classes.get_classes_arr()
                 )
                 self.annotated_image = annotated_image
 
@@ -761,8 +782,9 @@ class Detector:
             intrinsic_tensor = (
                 torch.from_numpy(self.curr_data.intrinsics).to(self.cfg.device).float()
             )
+            color_rgb = cv2.cvtColor(self.curr_data.color, cv2.COLOR_BGR2RGB)
             image_rgb_tensor = (
-                torch.from_numpy(self.curr_data.color).to(self.cfg.device).float()
+                torch.from_numpy(color_rgb).to(self.cfg.device).float()
                 / 255.0
             )
 
