@@ -22,10 +22,11 @@ yolo:
 
   ## The given classes lists
   ## Indoor Classes List
-  # given_classes_path: ./config/class_list/hm3d300_classes_ycb.txt
+  given_classes_path: ./config/class_list/hm3d300_classes_ycb.txt
   # given_classes_path: ./config/class_list/gpt_indoor_general.txt
+  # given_classes_path: ./config/class_list/colors.txt
   # given_classes_path: ./config/class_list/gpt_indoor_office.txt
-  given_classes_path: ./config/class_list/power_plant.txt
+  # given_classes_path: ./config/class_list/power_plant.txt
   # given_classes_path: ./config/class_list/gpt_indoor_classroom.txt
 
   ## Outdoor Classes List
@@ -111,7 +112,7 @@ use_avg_feat_for_unknown: True
 
 ## PCD Settings
 # minimum points threshold for object's PCD
-min_points_threshold: 750
+min_points_threshold: 250
 # pcd params
 # INCREASED from 0.02 (2cm) to 0.08 (8cm). 
 # This is the most effective way to reduce CPU work in Open3D.
@@ -163,13 +164,13 @@ rotation_threshold: 3
 
 
 ### LOCAL OBJECTS CONFIG --> CONCRETE OBJECTS
-active_window_size: 6
+active_window_size: 10
 downsample_interval: 3
 # Param for Split Detection
 max_common_th: 6
 max_pending_count: 2
 # Param for Stability Check
-stable_num: 4
+stable_num: 2
 
 
 ### GLOBAL OBJECTS CONFIG --> ANCHOR OBJECTS
