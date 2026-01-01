@@ -176,7 +176,7 @@ class ROSPublisher:
         if image is None:
             return
 
-        ros_image = self.bridge.cv2_to_imgmsg(image, encoding="rgb8")
+        ros_image = self.bridge.cv2_to_imgmsg(image, encoding="bgr8")
         publisher = {
             "annotated": self.image_publisher,
             "fastsam": self.fs_image_publisher,
