@@ -12,6 +12,10 @@ lm_examples:
   - "rack"
   - "bathroom-vanity"
   - "bed"
+  - "forklift"
+  - "barrel"
+  - "plant"
+  - "fire extinguisher"
 
 # high mobility examples
 hm_examples:

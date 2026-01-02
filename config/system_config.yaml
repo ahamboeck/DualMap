@@ -22,9 +22,9 @@ yolo:
 
   ## The given classes lists
   ## Indoor Classes List
-  given_classes_path: ./config/class_list/hm3d300_classes_ycb.txt
+  # given_classes_path: ./config/class_list/hm3d300_classes_ycb.txt
   # given_classes_path: ./config/class_list/gpt_indoor_general.txt
-  # given_classes_path: ./config/class_list/colors.txt
+  given_classes_path: ./config/class_list/colors.txt
   # given_classes_path: ./config/class_list/gpt_indoor_office.txt
   # given_classes_path: ./config/class_list/power_plant.txt
   # given_classes_path: ./config/class_list/gpt_indoor_classroom.txt
@@ -195,7 +195,7 @@ use_parallel: false
 ### GENERAL MAP CONFIG
 # If True, run local mapping only and get local map
 # If False, run both local and global mapping and get global map
-run_local_mapping_only: True
+run_local_mapping_only: False
 # Post 3D-level merging between objects, just like ConceptGraphs and HOV-SG
 # If True, the system will merge the local objects with similarity.
 merge_local_map: False
