@@ -51,17 +51,17 @@ fastsam:
   model_path: model/FastSAM-x.pt
   # model_path: model/FastSAM-s.pt
 
-# clip:
-#   _target_: _self_
-#   model_name:  MobileCLIP-S2
-#   pretrained: datacompdr
-#   clip_length: 512
-
 clip:
   _target_: _self_
-  model_name: ViT-H-14
-  pretrained: laion2b_s32b_b79k
-  clip_length: 1024
+  model_name:  MobileCLIP-S2
+  pretrained: datacompdr
+  clip_length: 512
+
+# clip:
+#   _target_: _self_
+#   model_name: ViT-H-14
+#   pretrained: laion2b_s32b_b79k
+#   clip_length: 1024
 
 device: cuda
 
