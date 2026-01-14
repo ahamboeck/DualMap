@@ -24,9 +24,9 @@ yolo:
   ## Indoor Classes List
   # given_classes_path: ./config/class_list/hm3d300_classes_ycb.txt
   # given_classes_path: ./config/class_list/gpt_indoor_general.txt
-  given_classes_path: ./config/class_list/colors.txt
+  # given_classes_path: ./config/class_list/colors.txt
   # given_classes_path: ./config/class_list/gpt_indoor_office.txt
-  # given_classes_path: ./config/class_list/power_plant.txt
+  given_classes_path: ./config/class_list/power_plant.txt
   # given_classes_path: ./config/class_list/gpt_indoor_classroom.txt
 
   ## Outdoor Classes List

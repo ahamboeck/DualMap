@@ -1,10 +1,5 @@
 person
 industrial worker
-safety helmet
-safety vest
-reflective vest
-safety goggles
-ear protection
 industrial pipe
 gas pipe
 pipe
@@ -15,11 +10,25 @@ pressure gauge
 analog gauge
 flange
 pump
-fire extinguisher
+pressure vessel
+cylindrical tank
+storage tank
 forklift
-cardboard box
 pallet
-blue barrel
+pallet collar
+stacked pallet collars
 metal shelf
 storage rack
+cardboard box
+wooden box
+wooden crate
+blue barrel
+water canister
+jerrycan
+first aid kit
+temporary construction fence
+construction fence panel
+stainless steel pipe
+chromed steel pipe
+polished metal pipe
 unknown
