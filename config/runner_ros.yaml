@@ -55,20 +55,20 @@ use_parallel: false
 # ============================================================
 # If True, run local mapping only and get local map
 # If False, run both local and global mapping and get global map
-run_local_mapping_only: false
+run_local_mapping_only: True
 
 # Save the generated local map
-save_local_map: false
+save_local_map: False
 
 # Save the global map (set False if run_local_mapping_only is True)
-save_global_map: true
+save_global_map: False
 
 
 # ============================================================
 # PRELOADING CONFIG
 # ============================================================
 # Preload an existing global map from disk
-preload_global_map: false
+preload_global_map: True
 
 # Preload an existing layout pcd and wall pcd from disk
 # If preload the layout, the layout pcd thread will be disabled
@@ -76,7 +76,7 @@ preload_layout: false
 
 # Path to preload map data.
 # If empty, the system will use the default preload path
-preload_path: ""
+preload_path: "output/map_results/self_collected_kesselhaus/map"
 # preload_path: "dataset/HM3D_collect/00829-QaLdnwvtxbs/global_map/hm3d"
 # preload_path: "output/map_results/replica_room_0/map"
 

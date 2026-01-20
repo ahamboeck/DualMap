@@ -6,6 +6,7 @@ import pickle
 import threading
 import time
 from pathlib import Path
+from turtle import color
 
 import cv2
 import numpy as np
@@ -416,7 +417,8 @@ class Detector:
     def process_yolo_results(self, color, obj_classes):
 
         # Perform YOLO prediction
-        results = self.yolo.predict(color, conf=0.2, verbose=False)
+        conf_val = getattr(self.cfg.yolo, 'confidence', 0.2)
+        results = self.yolo.predict(color, conf=conf_val, verbose=False)
 
         # Extract confidence scores
         confidence_tensor = results[0].boxes.conf

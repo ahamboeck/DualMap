@@ -105,17 +105,39 @@ class ROSPublisher:
             # 1. Determine Label and Color
             obj_name = visualizer.obj_classes.get_classes_arr()[obj.class_id]
             color = visualizer.obj_classes.get_class_color(obj_name)
-            
-            # Use the centroid of the Bounding Box as the Pose
-            center = obj.bbox.get_center()
-            extent = obj.bbox.get_extent()
+
+            # Use whichever bbox is available (preloaded global objects may not have `bbox`).
+            bbox = getattr(obj, "bbox", None)
+            if bbox is None:
+                bbox = getattr(obj, "bbox_2d", None)
+            if bbox is None:
+                pcd = getattr(obj, "pcd", None)
+                if pcd is not None and len(pcd.points) != 0:
+                    bbox = pcd.get_axis_aligned_bounding_box()
+                else:
+                    pcd_2d = getattr(obj, "pcd_2d", None)
+                    if pcd_2d is not None and len(pcd_2d.points) != 0:
+                        bbox = pcd_2d.get_axis_aligned_bounding_box()
+
+            if bbox is None:
+                continue
+
+            center = bbox.get_center()
+            extent = bbox.get_extent()
+
+            # Stable-ish marker IDs (RViz uses (ns,id) for updates)
+            uid = getattr(obj, "uid", None)
+            if uid is not None:
+                base_id = int(uid.int % (2**31 - 1))
+            else:
+                base_id = i
 
             # Create Text Marker (Label)
             text_marker = Marker()
             text_marker.header.frame_id = frame_id
             text_marker.header.stamp = now
             text_marker.ns = "labels"
-            text_marker.id = i
+            text_marker.id = base_id
             text_marker.type = Marker.TEXT_VIEW_FACING
             text_marker.action = Marker.ADD
             text_marker.pose.position.x = center[0]
@@ -131,7 +153,7 @@ class ROSPublisher:
             box_marker.header.frame_id = frame_id
             box_marker.header.stamp = now
             box_marker.ns = "bboxes"
-            box_marker.id = i
+            box_marker.id = base_id
             box_marker.type = Marker.CUBE
             box_marker.action = Marker.ADD
             box_marker.pose.position.x = center[0]

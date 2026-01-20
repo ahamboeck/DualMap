@@ -127,6 +127,10 @@ class Tracker:
         len_map = len(self.ref_map)
         len_curr = len(self.curr_frame)
 
+        # Add this safety check
+        if len_map == 0 or len_curr == 0:
+            return np.zeros((len_map, len_curr))
+
         overlap_matrix = np.zeros((len_map, len_curr))
 
         # calculate iou first

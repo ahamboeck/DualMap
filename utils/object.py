@@ -85,6 +85,13 @@ class BaseObject:
             self.pcd.points = o3d.utility.Vector3dVector(points)
             self.pcd.colors = o3d.utility.Vector3dVector(colors)
 
+        # Recreate bbox on load (was not serialized).
+        # This is important for visualization/publishing when maps are preloaded.
+        if hasattr(self, "pcd") and self.pcd is not None and len(self.pcd.points) != 0:
+            self.bbox = self.pcd.get_axis_aligned_bounding_box()
+        else:
+            self.bbox = o3d.geometry.AxisAlignedBoundingBox()
+
         self.clip_ft = np.array(state.get("clip_ft"))
         self.class_id = state.get("class_id")
         self.nav_goal = state.get("nav_goal")

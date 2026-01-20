@@ -305,8 +305,9 @@ class LocalMapManager(BaseMapManager):
         # HM_ELIMINATION Actions
         if obj.status == LocalObjStatus.HM_ELIMINATION:
 
-            # if we run local mapping only, we keep the HM/LM_ELIMINATION objects
+            # if we run local mapping only, still eliminate HM objects from the local map
             if self.cfg.run_local_mapping_only:
+                self.to_be_eliminated.add(obj.uid)
                 return
 
             # Get all the related objects in the graph
@@ -323,8 +324,9 @@ class LocalMapManager(BaseMapManager):
         # LM_ELIMINATION Actions
         if obj.status == LocalObjStatus.LM_ELIMINATION:
 
-            # if we run local mapping only, we keep the HM/LM_ELIMINATION objects
+            # if we run local mapping only, still eliminate LM objects from the local map
             if self.cfg.run_local_mapping_only:
+                self.to_be_eliminated.add(obj.uid)
                 return
 
             # Get all the related objects in the graph
@@ -546,6 +548,10 @@ class LocalMapManager(BaseMapManager):
 
     def merge_local_map(self) -> None:
 
+        if not self.has_local_map():
+            logger.warning("[LocalMap][Merge] Local map is empty, skipping merge.")
+            return
+        
         # Use tracker for matching
         self.tracker.set_current_frame(self.local_map)
 

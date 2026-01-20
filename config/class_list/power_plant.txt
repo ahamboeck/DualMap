@@ -1,34 +1,11 @@
-person
-industrial worker
-industrial pipe
-gas pipe
-pipe
-valve
-valve wheel
-valve handle
-pressure gauge
-analog gauge
-flange
-pump
-pressure vessel
-cylindrical tank
-storage tank
-forklift
-pallet
-pallet collar
-stacked pallet collars
-metal shelf
-storage rack
-cardboard box
-wooden box
-wooden crate
+large cylindrical pressure boiler
+metal scaffolding
+big wooden crate
 blue barrel
-water canister
-jerrycan
-first aid kit
-temporary construction fence
-construction fence panel
-stainless steel pipe
-chromed steel pipe
-polished metal pipe
+red barrel
+white canister
+red cone
+yellow cone
+ladder
+fire extinguisher
 unknown

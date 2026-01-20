@@ -1,5 +1,14 @@
 # low mobility examples
+# These are objects considered "stable" landmarks for the global map.
 lm_examples:
+  - "large cylindrical pressure boiler"
+  - "metal scaffolding"
+  - "big wooden crate"
+  - "blue barrel"
+  - "red barrel"
+  - "forklift"
+  - "pallet"
+  - "storage rack"
   - "stool"
   - "cabinet"
   - "couch"
@@ -12,13 +21,16 @@ lm_examples:
   - "rack"
   - "bathroom-vanity"
   - "bed"
-  - "forklift"
-  - "barrel"
   - "plant"
-  - "fire extinguisher"
 
 # high mobility examples
+# These are temporary or easily moved objects that usually stay in the local map.
 hm_examples:
+  - "ladder"
+  - "fire extinguisher"
+  - "white canister"
+  - "red cone"
+  - "yellow cone"
   - "backpack"
   - "box"
   - "clothes"
@@ -32,9 +44,11 @@ hm_examples:
   - "indoor-plant"
   - "carpet"
   - "rug"
+  - "unknown"
 
 # Extra descriptions for low mobility examples
 lm_descriptions:
-  - "furniture that is not often moved"
-  - "furniture that is used for sitting"
-  - "furniture that is used for placing things"
+  - "heavy industrial equipment that is not often moved"
+  - "large structural elements or stationary scaffolding"
+  - "large storage containers and heavy crates"
+  - "permanent infrastructure within the power plant"
